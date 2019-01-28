@@ -29,20 +29,23 @@ void amqp_reply_error_string(const char *prefix, amqp_rpc_reply_t x) {
             switch (x.reply.id) {
                 case AMQP_CONNECTION_CLOSE_METHOD: {
                     amqp_connection_close_t *m = (amqp_connection_close_t *) x.reply.decoded;
-                    std::cerr << "thread " << id << " " << prefix << " server connection error: " << m->reply_code << ", message: "
+                    std::cerr << "thread " << id << " " << prefix << " server connection error: " << m->reply_code
+                              << ", message: "
                               << m->reply_text.bytes
                               << std::endl;
                     break;
                 }
                 case AMQP_CHANNEL_CLOSE_METHOD: {
                     amqp_channel_close_t *m = (amqp_channel_close_t *) x.reply.decoded;
-                    std::cerr << "thread " << id << " " << prefix << " server channel error: " << m->reply_code << ", message: "
+                    std::cerr << "thread " << id << " " << prefix << " server channel error: " << m->reply_code
+                              << ", message: "
                               << m->reply_text.bytes
                               << std::endl;
                     break;
                 }
                 default:
-                    std::cerr << "thread " << id << " " << prefix << " method(" << std::setw(8) << std::hex << x.reply.id
+                    std::cerr << "thread " << id << " " << prefix << " method(" << std::setw(8) << std::hex
+                              << x.reply.id
                               << ") unknown server error"
                               << std::endl;
                     break;
@@ -87,6 +90,34 @@ void worker() {
         return;
     }
 
+    // 创建消息队列
+    amqp_queue_declare_ok_t *r = amqp_queue_declare(conn,
+                                                    CHANNEL_ID, // 子频道ID
+                                                    amqp_empty_bytes, // 独占队列名称尽量由系统创建，避免重复
+                                                    false, // 预建模式，队列必须已经存在，否则返回失败
+                                                    false, // 持久化模式，即使RabbitMQ重启消息依然不会丢失，需要交换器也为持久模式
+                                                    true, // 独占模式，不允许创建同名独占队列，独占队列在连接关闭后自动删除（不受持久化模式和自动删除模式影响）
+                                                    false, // 自动删除模式，如果队列没有被任何消费者订阅就会被自动删除
+                                                    amqp_empty_table);
+    reply = amqp_get_rpc_reply(conn);
+    if (reply.reply_type != AMQP_RESPONSE_NORMAL) {
+        amqp_reply_error_string("declare queue:", reply);
+        return;
+    }
+
+    // 绑定消息队列
+    amqp_queue_bind(conn,
+                    CHANNEL_ID, // 子频道ID
+                    r->queue, // 使用系统分配的队列名
+                    amqp_cstring_bytes("amq.fanout"), // 扇形交付模式
+                    amqp_empty_bytes, // 扇形交付模式不需要routing_key
+                    amqp_empty_table);
+    reply = amqp_get_rpc_reply(conn);
+    if (reply.reply_type != AMQP_RESPONSE_NORMAL) {
+        amqp_reply_error_string("Bind queue:", reply);
+        return;
+    }
+
     // 设置子频道QOS
     amqp_basic_qos(conn,
                    CHANNEL_ID, // 子频道ID
@@ -102,11 +133,11 @@ void worker() {
     // 接收消息
     amqp_basic_consume(conn,
                        CHANNEL_ID, // 子频道ID
-                       amqp_cstring_bytes("task_queue"),//队列名
+                       r->queue, // 使用系统分配的队列名
                        amqp_empty_bytes, // 消费者标签
                        false,
-                       false, // 自动确认模式，自动确认并删除消息，否则需要调用amqp_basic_ack来确认删除消息
-                       false, // 独占模式，消息队列只允许一个消费者绑定，后续消费者绑定都会失败
+                       true, // 自动确认模式，自动确认并删除消息，否则需要调用amqp_basic_ack来确认删除消息
+                       true, // 独占模式，由于队列是独占的（其他消费者看不到，队列名字是随机的），所以这边设置消费者独占也没有影响
                        amqp_empty_table);
     reply = amqp_get_rpc_reply(conn);
     if (reply.reply_type != AMQP_RESPONSE_NORMAL) {
@@ -115,7 +146,7 @@ void worker() {
     }
 
     amqp_envelope_t envelope;
-    struct timeval wait_for = {5, 0}; // 等待超时时间
+    struct timeval wait_for = {10, 0}; // 等待超时时间
     while (true) {
         // 手动释放内存，不过库内部已启用重用机制，此函数效果不大
         // amqp_maybe_release_buffers_on_channel(conn, CHANNEL_ID);
@@ -145,16 +176,6 @@ void worker() {
         int delay = std::count_if(content.begin(), content.end(), [](char c) { return c == '.'; });
         std::this_thread::sleep_for(std::chrono::seconds(delay));
         std::cout << "thread " << id << " sleep for " << delay << " seconds, " << content << std::endl;
-
-        // 确认删除消息
-        int ret = amqp_basic_ack(conn,
-                                 CHANNEL_ID, // 子频道ID
-                                 envelope.delivery_tag, // 这个和amqp_basic_consume的消费者标签无关
-                                 false); //只响应本次消息，当某些情况下一个流程由多个消息构成，则在所有消息处理完成后设置此标识为true
-        if (ret != AMQP_STATUS_OK) {
-            std::cerr << "thread " << id << " ack: " << amqp_error_string2(ret) << std::endl;
-            return;
-        }
 
         // 释放消息
         amqp_destroy_envelope(&envelope);
