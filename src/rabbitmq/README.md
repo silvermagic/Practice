@@ -39,3 +39,7 @@ Work Queues
 Publish/Subscribe
 
 > 一次向多个消费者发送消息
+
+Routing
+
+> 有选择地接收消息
