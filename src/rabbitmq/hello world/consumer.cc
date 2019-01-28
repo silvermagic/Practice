@@ -80,34 +80,6 @@ int main() {
         return -1;
     }
 
-    // 创建消息队列
-    amqp_queue_declare(conn,
-                       CHANNEL_ID, // 子频道ID
-                       amqp_cstring_bytes("hello"), // 队列名
-                       false, // 预建模式，队列必须已经存在，否则返回失败
-                       false, // 持久化模式，即使RabbitMQ重启消息依然不会丢失，需要交换器也为持久模式
-                       false, // 独占模式，不允许创建同名独占队列，独占队列在连接关闭后自动删除（不受持久化模式影响）
-                       true, // 自动删除模式，如果队列没有被任何消费者订阅就会被自动删除
-                       amqp_empty_table);
-    reply = amqp_get_rpc_reply(conn);
-    if (reply.reply_type != AMQP_RESPONSE_NORMAL) {
-        amqp_reply_error_string("Declare queue:", reply);
-        return -1;
-    }
-
-    // 绑定消息队列
-    amqp_queue_bind(conn,
-                    CHANNEL_ID, // 子频道ID
-                    amqp_cstring_bytes("hello"), // 队列名
-                    amqp_cstring_bytes("amq.direct"), // 直接交付模式
-                    amqp_cstring_bytes("hello"), // 直接交付模式的routing_key就是队列名
-                    amqp_empty_table);
-    reply = amqp_get_rpc_reply(conn);
-    if (reply.reply_type != AMQP_RESPONSE_NORMAL) {
-        amqp_reply_error_string("Bind queue:", reply);
-        return -1;
-    }
-
     // 接收消息
     amqp_basic_consume(conn,
                        CHANNEL_ID, // 子频道ID

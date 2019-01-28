@@ -100,7 +100,7 @@ int main() {
                     CHANNEL_ID, // 子频道ID
                     amqp_cstring_bytes("task_queue"), // 队列名
                     amqp_cstring_bytes("amq.direct"), // 直接交付模式
-                    amqp_cstring_bytes("task_queue"), // 直接交付模式的routing_key就是队列名
+                    amqp_empty_bytes, // 路由关键字
                     amqp_empty_table);
     reply = amqp_get_rpc_reply(conn);
     if (reply.reply_type != AMQP_RESPONSE_NORMAL) {
@@ -120,7 +120,7 @@ int main() {
         ret = amqp_basic_publish(conn,
                                  CHANNEL_ID, // 子频道ID
                                  amqp_cstring_bytes("amq.direct"), // 直接交付模式
-                                 amqp_cstring_bytes("task_queue"), // 直接交付模式下routing_key使用队列名替代
+                                 amqp_empty_bytes, // 设置消息路由关键字，和队列绑定时的关键字保持一致
                                  false, // 强制交付，表示如果RabbitMQ不能及时将消息路由给某个队列，那么将返回basic.reject方法
                                  false, // 立即交付，表示如果RabbitMQ不能及时将消息路由给某个绑定在队列上的消费者，那么将返回basic.reject方法
                                  &props,
