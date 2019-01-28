@@ -1,0 +1,2 @@
+# https://developer.gnome.org/gobject/stable/glib-genmarshal.html
+VOID:STRING,STRING
