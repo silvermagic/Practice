@@ -47,3 +47,7 @@ Routing
 Topics
 
 > 根据模式（主题）接收消息
+
+RPC
+
+> 使用RabbitMQ C库实现RPC功能
