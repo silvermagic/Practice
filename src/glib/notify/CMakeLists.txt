@@ -17,3 +17,4 @@ pkg_check_modules(GOBJECT REQUIRED gobject-2.0)
 include_directories(${GLIB_INCLUDE_DIRS} ${GOBJECT_INCLUDE_DIRS})
 link_directories(${GLIB_LIBRARY_DIRS} ${GOBJECT_LIBRARY_DIRS})
 target_link_libraries(app ${GLIB_LIBRARIES} ${GOBJECT_LIBRARIES})
+

@@ -18,3 +18,7 @@ class
 signal
 
 > 信号机制使用
+
+notify
+
+> 监测数据成员值变化
