@@ -1,0 +1,23 @@
+# Chinese translations for app package
+# app 软件包的简体中文翻译.
+# Copyright (C) 2019 THE app'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the app package.
+# root <fwdssg@gmail.com>, 2019.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: app 1.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2019-01-29 13:45+0800\n"
+"PO-Revision-Date: 2019-01-29 13:46+0800\n"
+"Last-Translator: root <fwdssg@gmail.com>\n"
+"Language-Team: Chinese (simplified)\n"
+"Language: zh_CN\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: ../src/main.cpp:11
+#, c-format
+msgid "gettext"
+msgstr "中文"

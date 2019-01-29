@@ -7,3 +7,7 @@
 basis
 
 > automake基本架构和用法
+
+internationalization
+
+> 语言国际化
