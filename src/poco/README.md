@@ -14,3 +14,7 @@ byte order
 type
 
 > 泛型类型
+
+thread
+
+> 线程创建
