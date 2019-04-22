@@ -18,3 +18,7 @@ type
 thread
 
 > 线程创建
+
+config
+
+> 参数解析
