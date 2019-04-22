@@ -3,6 +3,7 @@
 ```
 ### 编译环境
 # yum install -y poco-devel
+# yum install -y boost-devel
 ```
 
 ### 教程简介
@@ -22,3 +23,7 @@ thread
 config
 
 > 参数解析
+
+logger
+
+> 日志输出
