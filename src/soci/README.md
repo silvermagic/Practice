@@ -41,3 +41,7 @@ Object
 Statements
 
 > 如何使用预处理
+
+Async
+
+> 如何异步执行SQL查询
