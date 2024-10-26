@@ -1,0 +1,14 @@
+{
+    "cmake.buildDirectory": "${workspaceFolder}/build",
+    "cmake.buildEnvironment": {"CMAKE_EXPORT_COMPILE_COMMANDS": "ON"},
+    "clangd.detectExtensionConflicts": true,
+    "clangd.arguments": [
+        "--background-index",
+        "--all-scopes-completion",
+        "--completion-style=detailed",
+        "--compile-commands-dir=${workspaceFolder}/build"
+    ],
+    "clangd.fallbackFlags": [
+        "-I/usr/local/include"
+    ]
+}
